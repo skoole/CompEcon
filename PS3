@@ -1,0 +1,71 @@
+%%Question 1
+A=[54 14 -11 2;14 50 -4 29; -11 -4 55 22; 2 29 22 95];
+b=[1;1;1;1];
+[L,U]=lu(A)
+y=L\b
+x=U\y
+xGJ=gjacobi(A,b,x)
+xGS=gseidel(A,b,x)
+rGS=round(xGS,4)
+rGJ=round(xGJ,4)
+
+max(abs((rGJ)-(rGS)))==0
+%%
+%Question 2
+A=randn(100);
+b = randn(100,1);
+tic
+x=A\b;
+toc
+tic
+for i=1:10
+    x=A\b;
+end
+toc
+tic
+for i=1:50
+    x=A\b;
+end
+toc
+
+[L,U]=lu(A);
+tic
+x = U\(L\b);
+toc
+tic
+for i=1:10
+   x = U\(L\b);
+end
+toc
+for i=1:50
+   x = U\(L\b);
+end
+toc
+
+tic
+c=inv(A)*b;
+toc
+tic
+for i=1:10
+   c=inv(A)*b;
+end
+toc
+tic
+for i=1:50
+   c=inv(A)*b;
+end
+toc
+%%
+%Question 3
+%Yes, if one of the values gets too large, relative to the other, the
+%obvious way of coding can fail. If |y| > |z| and y is too big, y^2 can
+%overflow. If this is the case, Matlab can find the largest real number
+%that y can be using the command realmax. Conversly, we can use realmin
+%to find the smallest positive normalized number that y can be. 
+
+%%
+%Multiple Choice
+%1. A)
+%2. B)
+%3. B)
+%4. C)

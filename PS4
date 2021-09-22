@@ -1,0 +1,80 @@
+%Q1a
+%df(x)/dx=f'(x)=2x-1=.5
+
+%Q1b
+function y=j(x)
+    y=x^2-c;
+    x=bisect('j',1,2);
+end
+
+%Q1c
+function x=newtroot(c)
+x-1;%initial guess
+tol=5E-5;
+maxit=50;
+for it=1:50
+    fval=x^2-c
+    fjac=2x
+    x=x-fjac\fval;
+    if norm(fval)<tol,break,end
+end
+
+%Q2
+function V=BSVal(S,K,tau,r,delta,sigma);
+d=(log(exp(-delta*tau)*S)-log(exp(-r*tau)*K))...%numerator three dots
+    /(sigma*sqrt(tau))+(1/2)*sigma*sqrt(tau) %denominator
+v=exp(-delta*tau)*S*cdfn(d)-exp(-r*tau)*K...
+    *cdfn(d-sigma*sqrt(tau));
+
+function sigma=ImpVol(S,K,tau,r,delta,V)
+sigma=0.1; %initialguess for volitatlut
+S=60
+K=58
+tau=0.5;
+r=0.035
+delta=0.0125;
+V=4.77;
+tol=5E-5
+maxit=50;
+for it=1:maxit
+    fval=V-BSVal(S,K,tau,r,delta,sigma);
+    d=(log(exp(-delta*tau)*S)-log(exp(-r*tau)*K))/(sigma*sqrt(tau))+(1/2)...
+        *sigma*sqrt(tau)
+    fjac=-S*exp(-delta*tau)*sqrt(tau/(2*pi))*exp(-0.5*d^2);
+    sigma=sigma-fjac\fval;
+    if norm(fval)<tol,break,end
+end
+
+%Q3
+function [fval,fjac]=f3(x)
+    fval= [(200x(1)*(x(2)-x(1)^2)-x(1)+1);
+        (100x(1)^2-100(x2))]
+    fjac=[(200x(2)-200x(1)^2),200x(1)-100x(2);_
+           200x(1)-400x(1),100x(1)^2-100]
+q=newton('f3',[1.25;1]);
+k=broyden('f3',[1.25;1]);
+
+%PS4Q5
+%A few problems arise with Newton Methods. These include coding errors,
+%which are human errors done by the analyst, misspecification of a starting
+%point (in other words, a starting point not close to the root), and
+%ill-conditioned Jacobian at the root. We can choose a non-linear solution
+%method by looking at a few things; the rate of convergence (measured in
+%the number of iterations), computational effort (which depends on the "dimension
+%of x and the complexity of the derivative", and development effort (the
+%effort of the analyst to produce a successful code). 
+
+%PS4Q6
+%Yes, disequilibrium arbitrage opportunities exist if xi < bi and fi(x) > 0
+%or xi > ai and fi(x) < 0. In these cases, xi should be increased if 
+%xi < bi and fi(x) > 0 and xi should be decreased if xi > ai and fi(x) < 0.
+%
+%If excess demand at a price (p) is 0, then demand=supply. Now, if the
+%government imposes a price ceiling, excess demand can exist only if the price 
+%ceiling is binding. The equilibrium market price is a solution to the
+%complementarity problem CP(E, 0, p¯), not CP(E, ¯p, 0).
+
+
+%Multiple Choice
+%1.C
+%2.B

@@ -1,0 +1,182 @@
+%%
+%Q1
+%Analytically using Calculus:
+%Change in CS= Integral between 1 and 4 of 2p^-0.5dq 
+%=2((p^-1/2 +1)/(-1/2 +1) =(2p^1/2)/1/2 = 4(2-1)=4
+
+%Trapezoid: Answer->4.0065
+[x,w]=qnwtrap(11,1,4);
+sum(w.*(2./sqrt(x)))
+
+%Simpson: Answer->4.0001
+[x,w]=qnwsimp(11,1,4);
+sum(w.*(2./sqrt(x)))
+
+%Gauss-Legendre: Answer->4.0000
+[x,w]=qnwlege(11,1,4);
+sum(w.*(2./sqrt(x)))
+
+%Equidistributed sequence rule: Answer->4.0025
+[x,w]=qnwequi(11,1,4);
+sum(w.*(2./sqrt(x)))
+
+%%
+%Q2 
+%alpha is equal to 0.5078
+alpha = bisect('f1',0,1)
+%function y=f|(alpha)
+
+function y=f1(alpha)
+[lambda, w]=qnwtrap(20000,0,10000);
+ugly=sum(w.*exp(alpha*lambda-lambda.^2./2));
+y=alpha*ugly-1;
+end
+%%
+%Q3
+%Monte Carlo Method
+n=1000;
+x=-log(1-rand(n,1));
+disp(mean(x.^2))
+    %1.9516
+n=10000;
+x=-log(1-rand(n,1));
+disp(mean(x.^2))
+    %1.9814
+n=100000;
+x=-log(1-rand(n,1));
+disp(mean(x.^2))
+    %2.0051
+%Neiderreuter Quasi-Monte Carlo Method
+n=[1000; 10000; 100000];
+for i=1:length(n)
+    [x,~]=qnwequi(n(i),0,1,'N');
+    mean((-log(1-x)).^2) 
+end
+    %1.9701
+    %1.9974
+    %2.0002
+
+%% 
+%Q4
+% No, the centered finite difference approximation is one order more 
+%accurate than the one-sided finite difference approximation. The one-sided
+%finite difference approximation has to the derivative of f at x has an
+%error of O(h) while the centered finite difference approximation has an
+%error of O(h^2). When lambda=-1, the evaluation points are evenly spaced,
+%as x lies halfway between the other points, and thus, we obtain the
+%centered finite difference approximation. If lambda=2, we need to set h>0
+%for lower bound and h<0 for upper bound. Yes, we can compute Hessian
+%matrices using finite difference approximations to second derivatives.
+%Numerical approximations of derivatives are needed when the function can
+%be computed at any value of x but there is difficulty in deriving a closed
+%form expression. They are also needed when the value of f is known only at
+%a fixed set of points. However, a few drawbacks also arise; if h is made
+%too small, round-off error will make the results meaningless, and if h is
+%made too large, there may be poor approximation. A good rule of thumb for
+%the one-sided approximation is: h = max(|x|,1)√e. A good rule of thumb
+%for the two-sided approximation is: h = max (|x|, 1)*(cubed root)√e. 
+%A good rule of thumb for second derivatives in setting h is 
+%h = max (|x|,1)*(fourth root)√e.
+
+which fdhess;
+
+fj = fdjac('f4',1)
+fd = fdhess('f4',1)
+    %Fdjac= 2.5401 and fdhess=-0.815
+function y=f4(x);
+y=2*x+sin(x);
+end
+%%
+%Q5
+%x(alpha-y)=0
+%y(x-1)=0
+%x=1
+%y=alpha 
+
+function demdif03
+close all
+
+disp(' ')
+disp('DEMDIF03 Commercial Fishery Model (from V.L. Smith)')
+
+beta=2.75; f=0.025; del=10;             % Parameter values 
+
+% Compute the trajectories
+maxt=30;                                % ending time period   
+n=100;                                  % number of time steps 
+t=[0:0.025:4.95 5:(maxt-5)/n:maxt]';    % time values
+%t=1:1000;t=t';
+xvals=0:0.1:1;
+yvals=0:0.2:2;
+x0=phase(xvals,yvals);                  % initial conditions 
+x0=x0(:,find(x0(1,:)>0));               % eliminate values with x=0
+%x=[1:10;1:10];
+%call the ODE solver
+[t,x]=rk4('lv',t,x0,[],alpha);
+
+% Compute the isoclines
+s=0.01:0.01:1;
+x1-1./(alpha-s);            % x one-isocline 
+x2=1./(s-1);                % y one-isocline 
+
+% Plot the phase diagram
+figure(1)
+plot(squeeze(x(:,1,:)),squeeze(x(:,2,:)),'-')
+hold on
+plot(s,x1,':');
+plot(s,x2,':');
+hold off
+xlabel('x');
+ylabel('y');
+title('Phase Diagram for Predator-Prey Model');
+axis([0 1 0 2]);
+%=text(.005,.3,'x''<0');
+%set(h,'fontsize',7)
+%h=text(.06,.1,'y''>0');
+%set(h,'fontsize',7)
+%h=text(.825,.15,'y''>0');
+%set(h,'fontsize',7)
+%h=text(.825,.35,'y''<0');
+%set(h,'fontsize',7)
+
+
+%h=text(0.085,1.125,'A');
+%set(h,'fontsize',8)
+%h=text(.325,1.8,'B');
+%set(h,'fontsize',8)
+%h=text(0.5,1.5,'C');
+%set(h,'fontsize',8)
+
+prtfigs(mfilename,'Phase Diagram for Predator-Prey Model',1)
+
+
+
+% PHASE   A utility to generate boundary points for 2D phase plot.
+% INPUTS: X,Y vectors of values for the x and y axes.
+% OUTPUT: P, a 2xK matrix of initial values that can be passed to
+%   an ODE solver (e.g., RK4).
+function p=phase(x,y);
+  miny=min(y);
+  maxy=max(y);
+  x=x(:)';
+  y=y(:)';
+  nx=length(x);
+  ny=length(y);
+  y=y(2:ny-1);
+  ny=ny-2;
+  p=[x;(miny+zeros(1,nx))];
+  if ny>0 p=[p [(max(x)+zeros(1,ny));y]]; end
+  p=[p [fliplr(x);(maxy+zeros(1,nx))]];
+  if ny>0 p=[p [(min(x)+zeros(1,ny));fliplr(y)]]; end
+
+function dk=lv(t,k,flag,alpha)
+x=k(1,:);
+y=k(2,:);
+dx=alpha*x-x.*y:
+dy=x.*y-y;
+dk=[dx:dy]
+
+  %%
+  %MC
+  %1.D
+  %2.D
